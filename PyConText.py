@@ -1,61 +1,53 @@
 import os
 import shutil
+import time
+import keyboard
+import ctypes
+from ctypes import wintypes
 
-screen = []
-screen_width = 0
-screen_height = 0
 
-def init(width=shutil.get_terminal_size().columns, height=shutil.get_terminal_size().lines, main_char="[]"):
-    """
-    Initializes the screen with a given width and height, and fills it with
-    a given character.
+# Define required structures
+class COORD(ctypes.Structure):
+    _fields_ = [("X", wintypes.SHORT),
+                ("Y", wintypes.SHORT)]
 
-    Parameters
-    ----------
-    width : int
-        The width of the screen in characters
-    height : int
-        The height of the screen in lines
-    main_char : str
-        The character to fill the screen with, defaults to "[]"
-    """
-    global screen, screen_width, screen_height
+class SMALL_RECT(ctypes.Structure):
+    _fields_ = [("Left", wintypes.SHORT),
+                ("Top", wintypes.SHORT),
+                ("Right", wintypes.SHORT),
+                ("Bottom", wintypes.SHORT)]
 
-    Console.clear()
+class CONSOLE_SCREEN_BUFFER_INFO(ctypes.Structure):
+    _fields_ = [("dwSize", COORD),
+                ("dwCursorPosition", COORD),
+                ("wAttributes", wintypes.WORD),
+                ("srWindow", SMALL_RECT),
+                ("dwMaximumWindowSize", COORD)]
 
-    screen_width = width
-    screen_height = height
-
-    for y in range(height):
-        screen.append([])
-        for x in range(width):
-            screen[y].append(main_char)
 
 class Console():
 
     @staticmethod
-    def get_size():
+    def get_size() -> tuple:
         """
-        Returns the size of the terminal in characters as a tuple of (width, height)
-        
+        Returns the size of the terminal as a named tuple of two integers, columns and lines.
+
         Parameters
         ----------
         None
-
+        
         Returns
         -------
-        tuple
+        collections.namedtuple
+            A named tuple of two integers, columns and lines.
         """
-        return shutil.get_terminal_size()
+        width, height = shutil.get_terminal_size()
+        return int(width), int(height)
 
     @staticmethod
-    def clear():
+    def clear() -> None:
         """
-        Clears the console screen
-
-        This function works by checking the current operating system and calling the
-        relevant command to clear the screen. If the operating system is Windows, it
-        calls "cls". If the operating system is not Windows, it calls "clear".
+        Clears the console screen.
 
         Parameters
         ----------
@@ -67,12 +59,32 @@ class Console():
         """
         os.system("cls" if os.name == "nt" else "clear")
 
+
 class Cursor():
 
     @staticmethod
-    def move_to_start():
+    def move(x:int=0, y:int=0) -> None:
         """
-        Moves the cursor to the start of the current line
+        Moves the cursor to a given position
+
+        Parameters
+        ----------
+        x : int
+            The x position of the cursor starting from 0
+        y : int
+            The y position of the cursor starting from 0
+
+        Returns
+        -------
+        None
+        """
+        print(f"\033[{y};{x}H", end="")
+        return
+
+    @staticmethod
+    def get_cursor_position() -> tuple:
+        """
+        Requests the current position of the cursor from the terminal and returns it as a tuple of two integers, the row and column of the cursor.
 
         Parameters
         ----------
@@ -80,6 +92,133 @@ class Cursor():
 
         Returns
         -------
+        tuple
+            A named tuple of two integers, the row and column of the cursor. If the operation is unsupported returns None.
+        """
+        h = ctypes.windll.kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE = -11
+        csbi = CONSOLE_SCREEN_BUFFER_INFO()
+        success = ctypes.windll.kernel32.GetConsoleScreenBufferInfo(h, ctypes.byref(csbi))
+        if not success:
+            return None
+        # Y = row, X = column
+        return csbi.dwCursorPosition.Y + 1, csbi.dwCursorPosition.X + 1
+
+
+class Widget():
+
+    @staticmethod
+    def input(prompt: str, end: str = ": ", erase: bool = True) -> str:
+        """
+        Reads input from the user and returns it as a string.
+
+        Parameters
+        ----------
+        prompt : str
+            The text to display to the user before reading input
+        end : str
+            The string to append to the end of the prompt, defaults to ": "
+        erase : bool
+            Whether to erase the input line after reading, defaults to True
+
+        Returns
+        -------
+        str
+        """
+        input_val = input(prompt+end)
+        print("\033[1A\033[2K" if erase else "", end="")
+        return input_val
+
+    @staticmethod
+    def radio(options: list, selection_character: chr = "*", unselection_character: chr = " ") -> str:
+        """
+        Creates a radio button menu from a given list of options
+
+        Parameters
+        ----------
+        options : list
+            A list of strings to be used as the options
+        selection_character : chr
+            The character to use to mark the selected option, defaults to "*"
+        unselection_character : chr
+            The character to use to mark the unselected options, defaults to " "
+
+        Returns
+        -------
+        str
+        """
+        select = 0
+        choosing = True
+
+        print("\033[1A\033[2K"*(len(options)+1), end="")
+        for i, option in enumerate(options):
+            print(f"[{selection_character if i == select else unselection_character}] {option}")
+
+        starting_y, starting_x = Cursor.get_cursor_position()
+
+        while choosing:
+
+            while keyboard.is_pressed("up") or keyboard.is_pressed("down") or keyboard.is_pressed("enter"):
+                pass
+            key = keyboard.read_key()
+
+            if key == "up":
+                Cursor.move(starting_x+1, starting_y+select-len(options))
+                print(unselection_character)
+
+                select = max(0, select-1)
+
+                Cursor.move(starting_x+1, starting_y+select-len(options))
+                print(selection_character)
+
+            elif key == "down":
+                Cursor.move(starting_x+1, starting_y+select-len(options))
+                print(unselection_character)
+
+                select = min(len(options)-1, select+1)
+
+                Cursor.move(starting_x+1, starting_y+select-len(options))
+                print(selection_character)
+
+            elif key == "enter":
+                choosing = False
+                Console.clear()
+                return options[select]
+
+    @staticmethod
+    def output(output, alignment="left"):
+        """
+        Outputs the given string or list of strings to the console, with optional alignment
+
+        Parameters
+        ----------
+        output : str or list
+            The string or list of strings to output
+            If it is a list, each element will be printed on a new line
+        alignment : str
+            The alignment of the output, either "left", "center", or "right". Defaults to "left"
+
+        Returns
+        -------
         None
         """
-        print("\033[H", end="")
+        if alignment == "left":
+            Console.clear()
+            if type(output) == str:
+                print(output, sep="\n")
+            elif type(output) == list:
+                for i in output:
+                    print(i, sep="\n")
+        if alignment == "center":
+            width, _ = Console.get_size()
+            if type(output) == str:
+                print(" "*((width//2)-(len(output)//2)), output, sep="", end="\n")
+            elif type(output) == list:
+                for i in output:
+                    print(" "*((width//2)-(len(i)//2)), i, sep="", end="\n")
+        if alignment == "right":
+            width, _ = Console.get_size()
+            if type(output) == str:
+                print(" "*(width-len(output)), output, sep="", end="\n")
+            elif type(output) == list:
+                for i in output:
+                    print(" "*(width-len(i)), i, sep="", end="\n")
