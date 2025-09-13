@@ -1,9 +1,10 @@
+# Imports
 import os
 import shutil
 import time
 import keyboard
-import ctypes
 from ctypes import wintypes
+import ctypes
 
 
 # Define required structures
@@ -25,6 +26,7 @@ class CONSOLE_SCREEN_BUFFER_INFO(ctypes.Structure):
                 ("dwMaximumWindowSize", COORD)]
 
 
+# Console functions
 class Console():
 
     @staticmethod
@@ -60,6 +62,7 @@ class Console():
         os.system("cls" if os.name == "nt" else "clear")
 
 
+# Cursor functions
 class Cursor():
 
     @staticmethod
@@ -104,6 +107,7 @@ class Cursor():
         return csbi.dwCursorPosition.Y + 1, csbi.dwCursorPosition.X + 1
 
 
+# Widget functions
 class Widget():
 
     @staticmethod
