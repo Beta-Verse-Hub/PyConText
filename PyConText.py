@@ -1,7 +1,6 @@
 # Imports
 import os
 import shutil
-import time
 import keyboard
 from ctypes import wintypes
 import ctypes
@@ -98,12 +97,13 @@ class Cursor():
         tuple
             A named tuple of two integers, the row and column of the cursor. If the operation is unsupported returns None.
         """
-        h = ctypes.windll.kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE = -11
+        h = ctypes.windll.kernel32.GetStdHandle(-11)
         csbi = CONSOLE_SCREEN_BUFFER_INFO()
         success = ctypes.windll.kernel32.GetConsoleScreenBufferInfo(h, ctypes.byref(csbi))
+        
         if not success:
             return None
-        # Y = row, X = column
+        
         return csbi.dwCursorPosition.Y + 1, csbi.dwCursorPosition.X + 1
 
 
@@ -127,6 +127,7 @@ class Widget():
         Returns
         -------
         str
+            The input from the user as a string
         """
         input_val = input(prompt+end)
         print("\033[1A\033[2K" if erase else "", end="")
