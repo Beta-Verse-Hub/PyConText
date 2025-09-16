@@ -1,3 +1,4 @@
+![Main icon](icon.png)
 # PyConText
 
 PyConText is a Python package for displaying text in the console with format and give console cursor control.
