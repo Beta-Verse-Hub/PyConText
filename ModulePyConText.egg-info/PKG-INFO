@@ -1,3 +1,23 @@
+Metadata-Version: 2.4
+Name: ModulePyConText
+Version: 0.0.1
+Summary: A windows-only python package for displaying text in the console with format and give console cursor control.
+Home-page: https://github.com/Beta-Verse-Hub/PyConText
+Author: Baibhav Kumar Jha
+Author-email: Baibhav Kumar Jha <baibhavkumarjha1@gmail.com>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/Beta-Verse-Hub/PyConText
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: Microsoft :: Windows
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: keyboard>=0.13.5
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
 ![PyConText](icon.png)
 # PyConText
 
