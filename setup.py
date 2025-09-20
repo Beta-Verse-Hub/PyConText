@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ModulePyConText',
-    version='0.0.1',
+    version='0.0.2',
     author="Baibhav Kumar Jha",
     author_email="baibhavkumarjha1@gmail.com",
     description="A windows-only python package for displaying text in the console with format and give console cursor control.",

@@ -45,6 +45,11 @@ None
 collections.namedtuple
 - A named tuple of two integers, columns and lines.
 
+*Example*
+```python
+PyConText.Console.get_size()
+```
+
 ### clear()
 
 Clears the console screen.
@@ -54,6 +59,11 @@ None
 
 *Returns*
 None
+
+*Example*
+```python
+PyConText.Console.clear()
+```
 
 ## Cursor Functions
 
@@ -69,6 +79,11 @@ y : int
 *Returns*
 None
 
+*Example*
+```python
+PyConText.Cursor.move(0, 0)
+```
+
 ### get_cursor_position()
 
 Requests the current position of the cursor from the terminal and returns it as a tuple of two integers, the row and column of the cursor.
@@ -79,6 +94,11 @@ None
 *Returns*
 tuple
 - A named tuple of two integers, the row and column of the cursor. If the operation is unsupported returns None.
+
+*Example*
+```python
+PyConText.Cursor.get_cursor_position()
+```
 
 ## Widget Functions
 
@@ -98,6 +118,11 @@ erase : bool
 str
 - The input from the user as a string
 
+*Example*
+```python
+PyConText.Widget.input("Enter your name")
+```
+
 ### radio(options: list, selection_character: chr = "*", unselection_character: chr = " ")
 
 Creates a radio button menu from a given list of options
@@ -114,6 +139,11 @@ unselection_character : chr
 str
 - The selected option as a string
 
+*Example*
+```python
+PyConText.Widget.radio([1,2,3])
+```
+
 ### output(output, alignment="left")
 Outputs the given string or list of strings to the console, with optional alignment
 
@@ -127,3 +157,7 @@ alignment : str
 *Returns*
 None
 
+*Example*
+```python
+PyConText.Widget.output("Hello World", alignment="center")
+```
